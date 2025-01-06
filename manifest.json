@@ -1,0 +1,11 @@
+{
+	"id": "okami-obsidian-publisher",
+	"name": "Obsidian Publisher",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Shared your notes on web",
+	"author": "Luminuszz",
+	"authorUrl": "https://me.daviribeiro.com/",
+	"fundingUrl": "https://me.daviribeiro.com/",
+	"isDesktopOnly": true
+}
