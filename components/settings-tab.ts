@@ -1,5 +1,5 @@
 import type OkamiStoragePublisherPlugin from "main";
-import { type App, Notice, PluginSettingTab, Setting } from "obsidian";
+import { type App, PluginSettingTab, Setting } from "obsidian";
 
 export class SettingTab extends PluginSettingTab {
 	private plugin: OkamiStoragePublisherPlugin;
@@ -21,7 +21,6 @@ export class SettingTab extends PluginSettingTab {
 					.setPlaceholder("API Key")
 					.setValue(this.plugin.settings.apiKey ?? "")
 					.onChange(async (value) => {
-						new Notice(`API Key updated ${value}`);
 						this.plugin.settings.apiKey = value;
 						this.plugin.saveSettings();
 					});

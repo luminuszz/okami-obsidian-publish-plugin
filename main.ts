@@ -1,6 +1,6 @@
 import { SettingTab } from "components/settings-tab";
 import { SharedOnWebModal } from "components/shared-modal";
-import { Notice, Plugin } from "obsidian";
+import { Plugin } from "obsidian";
 
 export interface OkamiStoragePublisherPluginSettings {
 	apiKey: string | null;
@@ -54,7 +54,6 @@ export default class OkamiStoragePublisherPlugin extends Plugin {
 
 		if (data) {
 			this.settings = Object.assign({}, data);
-			new Notice(`Settings loaded: ${JSON.stringify(this.settings)}`);
 		} else {
 			this.settings = Object.assign({}, DEFAULT_SETTINGS);
 		}

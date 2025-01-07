@@ -11,19 +11,22 @@ export interface UploadFileResponse {
 }
 
 const client = axios.create({
-	baseURL:
-		"https://okami-obsidian-shared-6by72d3sr-davi-ribeiros-projects.vercel.app/",
+	baseURL: "https://tmaoxhwccsdmupcduklj.supabase.co/functions/v1",
 });
 
 export class OkamiStorageClient {
 	constructor(private apiKey: string) {}
 
 	async uploadFile(payload: UploadFileRequest) {
-		const response = await client.post<UploadFileResponse>("api", payload, {
-			headers: {
-				"API-Key": this.apiKey,
+		const response = await client.post<UploadFileResponse>(
+			"/upload-note",
+			payload,
+			{
+				headers: {
+					"API-Key": this.apiKey,
+				},
 			},
-		});
+		);
 
 		return response.data;
 	}

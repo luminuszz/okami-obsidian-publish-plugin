@@ -29,18 +29,26 @@ export class SharedOnWebModal extends Modal {
 			button.setButtonText("Share on web").onClick(async () => {
 				try {
 					this.disableUploadButton(button);
+
 					const results = await this.uploadFile();
 
-					new Setting(this.contentEl).addText((text) => {
-						text.setValue(results);
-					});
+					this.contentEl.empty();
 
-					new Notice(`File uploaded: ${results}`);
+					new Setting(this.contentEl)
+						.setName("Click the link to copy")
+						.addText((text) => {
+							text.setValue(results);
+						});
+
+					new Setting(this.contentEl).addButton((button) => {
+						button.setButtonText("Copy link").onClick(() => {
+							navigator.clipboard.writeText(results);
+							new Notice("Link copied to clipboard");
+						});
+					});
 				} catch (e) {
 					if (e instanceof AxiosError) {
-						new Notice(
-							`Failed to upload file ${e.response?.data}  ${e.response?.status}`,
-						);
+						new Notice(`Failed to upload file ${e.code}  ${e.status}`);
 					}
 				} finally {
 					button.setDisabled(false);
@@ -54,8 +62,7 @@ export class SharedOnWebModal extends Modal {
 	}
 
 	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
+		this.contentEl.empty();
 	}
 
 	async uploadFile(): Promise<string> {
