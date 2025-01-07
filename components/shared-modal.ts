@@ -1,9 +1,11 @@
 import { OkamiStorageClient } from "api/okami-storage";
+import { AxiosError } from "axios";
 import type OkamiStoragePublisherPlugin from "main";
 import {
 	type App,
 	type ButtonComponent,
 	Modal,
+	Notice,
 	Setting,
 	type TFile,
 } from "obsidian";
@@ -21,16 +23,25 @@ export class SharedOnWebModal extends Modal {
 	) {
 		super(app);
 		this.setTitle("Share on web");
+		this.setContent("Click the button below to share this file on the web.");
 
-		new Setting(this.containerEl).addButton((button) => {
+		new Setting(this.contentEl).addButton((button) => {
 			button.setButtonText("Share on web").onClick(async () => {
 				try {
 					this.disableUploadButton(button);
 					const results = await this.uploadFile();
-					navigator.clipboard.writeText(results);
-					this.setContent(`Copied to clipboard: ${results}`);
+
+					new Setting(this.contentEl).addText((text) => {
+						text.setValue(results);
+					});
+
+					new Notice(`File uploaded: ${results}`);
 				} catch (e) {
-					console.error(e);
+					if (e instanceof AxiosError) {
+						new Notice(
+							`Failed to upload file ${e.response?.data}  ${e.response?.status}`,
+						);
+					}
 				} finally {
 					button.setDisabled(false);
 				}
@@ -52,9 +63,9 @@ export class SharedOnWebModal extends Modal {
 
 		const fileContent = await this.app.vault.read(this.file);
 
-		const { apiKey } = await this.plugin.loadSettings();
-
-		const okamiStorageClient = new OkamiStorageClient(apiKey);
+		const okamiStorageClient = new OkamiStorageClient(
+			this.plugin.settings.apiKey ?? "",
+		);
 
 		const data = await okamiStorageClient.uploadFile({
 			fileContent,

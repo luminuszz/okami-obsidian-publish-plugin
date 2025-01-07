@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export interface UploadFileRequest {
 	title: string;
 	fileContent: string;
@@ -8,21 +10,20 @@ export interface UploadFileResponse {
 	publicUrl: string;
 }
 
+const client = axios.create({
+	baseURL: "http://localhost:3000",
+});
+
 export class OkamiStorageClient {
 	constructor(private apiKey: string) {}
 
 	async uploadFile(payload: UploadFileRequest) {
-		const response = await fetch("<api upload>", {
-			method: "POST",
-			body: JSON.stringify(payload),
+		const response = await client.post<UploadFileResponse>("api", payload, {
 			headers: {
-				"Content-Type": "application/json",
-				Authorization: `API_KEY ${this.apiKey}`,
+				"API-Key": this.apiKey,
 			},
 		});
 
-		const results = await response.json();
-
-		return results as UploadFileResponse;
+		return response.data;
 	}
 }

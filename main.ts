@@ -1,9 +1,21 @@
 import { SettingTab } from "components/settings-tab";
 import { SharedOnWebModal } from "components/shared-modal";
-import { Plugin } from "obsidian";
+import { Notice, Plugin } from "obsidian";
+
+export interface OkamiStoragePublisherPluginSettings {
+	apiKey: string | null;
+}
+
+export const DEFAULT_SETTINGS: OkamiStoragePublisherPluginSettings = {
+	apiKey: null,
+};
 
 export default class OkamiStoragePublisherPlugin extends Plugin {
+	public settings: OkamiStoragePublisherPluginSettings;
+
 	async onload() {
+		this.loadSettings();
+
 		this.app.workspace.on("editor-menu", (menu, editor, view) => {
 			menu.addItem((item) => {
 				item
@@ -33,11 +45,18 @@ export default class OkamiStoragePublisherPlugin extends Plugin {
 		console.log("unloading OkamiStoragePublisherPlugin");
 	}
 
-	saveSettings(apiKey: string) {
-		this.saveData({ apiKey });
+	async saveSettings() {
+		await this.saveData(this.settings);
 	}
 
-	async loadSettings(): Promise<{ apiKey: string }> {
-		return (await this.loadData()) as { apiKey: string };
+	async loadSettings() {
+		const data = await this.loadData();
+
+		if (data) {
+			this.settings = Object.assign({}, data);
+			new Notice(`Settings loaded: ${JSON.stringify(this.settings)}`);
+		} else {
+			this.settings = Object.assign({}, DEFAULT_SETTINGS);
+		}
 	}
 }
