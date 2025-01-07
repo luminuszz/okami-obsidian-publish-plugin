@@ -7,7 +7,7 @@ import {
 	Modal,
 	Notice,
 	Setting,
-	type TFile,
+	TFile,
 } from "obsidian";
 
 export class SharedOnWebModal extends Modal {
@@ -17,6 +17,8 @@ export class SharedOnWebModal extends Modal {
 		button.setDisabled(true);
 	}
 
+	private okamiApi: OkamiStorageClient;
+
 	constructor(
 		app: App,
 		private readonly plugin: OkamiStoragePublisherPlugin,
@@ -24,6 +26,8 @@ export class SharedOnWebModal extends Modal {
 		super(app);
 		this.setTitle("Share on web");
 		this.setContent("Click the button below to share this file on the web.");
+
+		this.okamiApi = new OkamiStorageClient(this.plugin.settings.apiKey ?? "");
 
 		new Setting(this.contentEl).addButton((button) => {
 			button.setButtonText("Share on web").onClick(async () => {
@@ -70,17 +74,58 @@ export class SharedOnWebModal extends Modal {
 
 		const fileContent = await this.app.vault.read(this.file);
 
-		const okamiStorageClient = new OkamiStorageClient(
-			this.plugin.settings.apiKey ?? "",
-		);
+		new Notice("Uploading file...");
 
-		const data = await okamiStorageClient.uploadFile({
+		const data = await this.okamiApi.uploadFile({
 			fileContent,
 			title: this.file.basename,
 			author: this.app.metadataCache.getFileCache(this.file)?.frontmatter
 				?.author,
 		});
 
+		new Notice("Uploading upload file attachments.");
+
+		await this.saveNoteAttachments(data.noteId);
+
 		return data.publicUrl;
+	}
+
+	async saveNoteAttachments(noteId: string) {
+		if (this.plugin.settings.attachmentFolderPath === null) {
+			console.error("Attachment folder path not set");
+			return;
+		}
+
+		const activeFile = this.app.workspace.getActiveFile();
+
+		if (!activeFile) {
+			console.error("No active file found");
+			return;
+		}
+
+		const content = await this.app.vault.read(activeFile);
+
+		const attachmentRegex = /!\[\[([^\]]+)\]\]|!\[.*?\]\((.*?)\)/g;
+		let match: RegExpExecArray | null;
+
+		// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
+		while ((match = attachmentRegex.exec(content)) !== null) {
+			const attachmentName = match[1] || match[2];
+
+			new Notice(`Uploading attachment ${attachmentName}`);
+
+			const file = this.plugin.getAttachmentPath(attachmentName);
+
+			if (file && file instanceof TFile) {
+				const data = await this.app.vault.adapter.readBinary(file.path);
+
+				await this.okamiApi.uploadImageAttachment({
+					noteId,
+					file: data,
+					originalFileName: attachmentName,
+				});
+				new Notice(`Attachment ${attachmentName} uploaded`);
+			}
+		}
 	}
 }

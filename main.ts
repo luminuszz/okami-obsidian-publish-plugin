@@ -4,10 +4,12 @@ import { Plugin } from "obsidian";
 
 export interface OkamiStoragePublisherPluginSettings {
 	apiKey: string | null;
+	attachmentFolderPath: string | null;
 }
 
 export const DEFAULT_SETTINGS: OkamiStoragePublisherPluginSettings = {
 	apiKey: null,
+	attachmentFolderPath: null,
 };
 
 export default class OkamiStoragePublisherPlugin extends Plugin {
@@ -57,5 +59,11 @@ export default class OkamiStoragePublisherPlugin extends Plugin {
 		} else {
 			this.settings = Object.assign({}, DEFAULT_SETTINGS);
 		}
+	}
+
+	getAttachmentPath(fileName: string) {
+		return this.app.vault.getAbstractFileByPath(
+			`${this.settings.attachmentFolderPath}/${fileName}`,
+		);
 	}
 }

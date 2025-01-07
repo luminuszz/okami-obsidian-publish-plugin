@@ -25,5 +25,20 @@ export class SettingTab extends PluginSettingTab {
 						this.plugin.saveSettings();
 					});
 			});
+
+		new Setting(containerEl)
+			.setName("Attachment folder path")
+			.setDesc(
+				"The folder path where attachments will be stored (you need to set fixed Attachment path)",
+			)
+			.addText((text) => {
+				text
+					.setPlaceholder("Attachment folder path")
+					.setValue(this.plugin.settings.attachmentFolderPath ?? "")
+					.onChange(async (value) => {
+						this.plugin.settings.attachmentFolderPath = value;
+						this.plugin.saveSettings();
+					});
+			});
 	}
 }

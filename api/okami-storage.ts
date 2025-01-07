@@ -8,6 +8,13 @@ export interface UploadFileRequest {
 
 export interface UploadFileResponse {
 	publicUrl: string;
+	noteId: string;
+}
+
+export interface UploadImageAttachmentRequest {
+	noteId: string;
+	file: ArrayBuffer;
+	originalFileName: string;
 }
 
 const client = axios.create({
@@ -27,6 +34,23 @@ export class OkamiStorageClient {
 				},
 			},
 		);
+
+		return response.data;
+	}
+
+	async uploadImageAttachment(payload: UploadImageAttachmentRequest) {
+		const formData = new FormData();
+
+		formData.append("file", new Blob([payload.file]));
+		formData.append("noteId", payload.noteId);
+		formData.append("originalFileName", payload.originalFileName);
+
+		const response = await client.post("/upload-note-attachment", formData, {
+			headers: {
+				"Content-Type": "multipart/form-data",
+				"API-Key": this.apiKey,
+			},
+		});
 
 		return response.data;
 	}
