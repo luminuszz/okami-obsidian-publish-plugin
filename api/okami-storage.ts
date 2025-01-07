@@ -11,7 +11,8 @@ export interface UploadFileResponse {
 }
 
 const client = axios.create({
-	baseURL: "http://localhost:3000",
+	baseURL:
+		"https://okami-obsidian-shared-6by72d3sr-davi-ribeiros-projects.vercel.app/",
 });
 
 export class OkamiStorageClient {
